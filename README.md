@@ -2,7 +2,7 @@
 Basic test functions for interacting with a CosmosDB REST API using the DocumentDB protocols in R
 
 ### Cosmos DB Intro
-More information can be found at [Microsoft's website] [https://docs.microsoft.com/en-us/azure/cosmos-db/introduction]
+More information can be found at [Microsoft's website](https://docs.microsoft.com/en-us/azure/cosmos-db/introduction).<br />
 I wrote this specifically for a Cosmos DB using the Document DB protocol via the REST API.
 
 ### Getting Started
