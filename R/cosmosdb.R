@@ -16,18 +16,30 @@ library(digest)
 library(base64enc)
 library(httr)
 library(jsonlite)
+library(stringi)
+library(stringr)
 
 # Establish the CosmosDB environment for key storage
 envCosmosDB <- new.env(parent = emptyenv())
 
-cosmosAuth <- function(key) {
+cosmosAuth <- function(key, uri, dbName, collName) {
 
+    # Access key assignment
     assign("keyCosmos", key, envir = envCosmosDB)
+
+    # URI for the CosmosDB
+    assign("uri", uri, envir = envCosmosDB)
+
+    # Name of the target db
+    assign("dbName", dbName, envir = envCosmosDB)
+
+    # Name of the target collection
+    assign("collName", collName, envir = envCosmosDB)
 
 }
 
 
-generate.header <- function(verb = "GET", resource.type = "docs", resource.link = "dbs/nhlstats-db/colls/nhlstats-coll", stored.time, master.key = envCosmosDB, debug = FALSE) {
+genHeader <- function(verb = "GET", resource.type = "docs", resource.link, stored.time, master.key = envCosmosDB, debug = FALSE) {
 
     # Check if the key exists; if not, tell the user to authorize!
     if (length(envCosmosDB) == 0) {
@@ -42,11 +54,6 @@ generate.header <- function(verb = "GET", resource.type = "docs", resource.link 
 
         # consistent casing of parameters for auth header
         verb <- tolower(verb)
-        resource.type <- tolower(resource.type)
-        resource.link <- tolower(resource.link)
-
-        # DEPRECATED / *sometimes necessary* function to coerce date to proper format
-        #stored.time <- tolower(format(stored.time, "%a, %d %b %Y %H:%M:%S %Z", tz = "GMT"))
 
         # Create the fully-formed string
         string.to.hash <- paste(verb, break.space, resource.type, break.space, resource.link, break.space, stored.time, break.space, "", break.space, sep = "")
@@ -80,8 +87,21 @@ generate.header <- function(verb = "GET", resource.type = "docs", resource.link 
 
 }
 
+constructQuery <- function(sql.what, sql.where) {
 
-cosmosQuery <- function(post.uri = "https://prototype-cdmc.documents.azure.com/dbs/nhlstats-db/colls/nhlstats-coll/docs", res.type = "docs", res.link = "dbs/nhlstats-db/colls/nhlstats-coll", debug.auth = FALSE, debug.query = FALSE) {
+    # If I haven't specified a predicate don't build it
+    # If I did, build it in
+    if (sql.where == "") {
+        full.query <- paste("SELECT", sql.what, "FROM c", sep = " ")
+    } else {
+        full.query <- paste("SELECT ", sql.what, " FROM c WHERE (", sql.where, ")", sep = "")
+    }
+
+    # Return the query
+    full.query
+}
+
+cosmosQuery <- function(sql.what = "*", sql.where = "", debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
 
     # Use the current time to create a proper auth header
     current.time <- Sys.time()
@@ -89,9 +109,26 @@ cosmosQuery <- function(post.uri = "https://prototype-cdmc.documents.azure.com/d
     # Coerce current time to proper format
     ms.date.string <- tolower(format(current.time, "%a, %d %b %Y %H:%M:%S %Z", tz = "GMT"))
 
+    # Create POST URI for posting query to collection
+    post.uri <- paste(envCosmosDB$uri, "/dbs/", envCosmosDB$dbName, "/colls/", envCosmosDB$collName, "/docs", sep = "")
+
+    # Create the resource link and type from the environment variables
+    res.link <- paste("dbs/", envCosmosDB$dbName, "/colls/", envCosmosDB$collName, sep = "")
+    res.type <- "docs"
+
+    # Create full query with function
+    full.query <- constructQuery(sql.what, sql.where)
+
+    # Convert full query to JSON for HTTP POST
+    query <- toJSON(list(query = full.query, parameters = list()))
+
+    # I guess the brackets in the query parameter break it; so we'll remove them
+    query <- str_replace(query, fixed("["), "")
+    query <- str_replace(query, fixed("]"), "")
+
     # Generate auth header using specifications
-    auth.header <- generate.header(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-query-enable-crosspartition" = "true")), body = "{\"query\": \"SELECT * FROM c\", \"parameters\": [] }")
+    auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
+    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-documentdb-query-enablecrosspartition" = "true")), body = query)
 
     # Send the status code of the POST to the console
     print(paste("Status Code is", raw.response$status_code, sep = " "))
@@ -100,12 +137,19 @@ cosmosQuery <- function(post.uri = "https://prototype-cdmc.documents.azure.com/d
     if (debug.query == TRUE) {
 
         print("*** Headers of Response ***")
-        print(rcr$headers)
+        print(raw.response$headers)
+        print(readBin(raw.response$content, "character"))
 
     }
 
-    # Return the full response
-    raw.response
+    # If the content response flag is FALSE, return full HTTP response
+    if (content.response == FALSE) {
+        raw.response
+    } else if (content.response == TRUE) {
+        # If the content response flag is TRUE, return just the relevant content; no HTTP mess
+        char.response <- readContent(raw.response)
+        char.response$Documents
+    } else { print("Choose a content response; true or false!") }
 
 }
 
