@@ -4,8 +4,9 @@
 #                               #
 #################################
 #                               #
-# Author: Aaron Schroeder       #
-#                               #
+#     Create simple SELECT      #
+#    statements against any     #
+#      CosmosDB REST API        #
 #                               #
 #################################
 
@@ -16,7 +17,6 @@ library(digest)
 library(base64enc)
 library(httr)
 library(jsonlite)
-library(stringi)
 library(stringr)
 
 # Establish the CosmosDB environment for key storage
@@ -39,7 +39,7 @@ cosmosAuth <- function(key, uri, dbName, collName) {
 }
 
 
-genHeader <- function(verb = "GET", resource.type = "docs", resource.link, stored.time, master.key = envCosmosDB, debug = FALSE) {
+genHeader <- function(verb, resource.type = "docs", resource.link, stored.time, master.key = envCosmosDB, debug = FALSE) {
 
     # Check if the key exists; if not, tell the user to authorize!
     if (length(envCosmosDB) == 0) {
@@ -57,8 +57,6 @@ genHeader <- function(verb = "GET", resource.type = "docs", resource.link, store
 
         # Create the fully-formed string
         string.to.hash <- paste(verb, break.space, resource.type, break.space, resource.link, break.space, stored.time, break.space, "", break.space, sep = "")
-
-        # createHmac using sha256 & master.key, base64 digest
 
         # The master key comes in base64 format; decode this first
         master.key <- base64decode(master.key$keyCosmos)
@@ -89,8 +87,7 @@ genHeader <- function(verb = "GET", resource.type = "docs", resource.link, store
 
 constructQuery <- function(sql.what, sql.where) {
 
-    # If I haven't specified a predicate don't build it
-    # If I did, build it in
+    # Create the query using predicate if it exists
     if (sql.where == "") {
         full.query <- paste("SELECT", sql.what, "FROM c", sep = " ")
     } else {
@@ -120,11 +117,11 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", debug.auth = FALSE, debu
     full.query <- constructQuery(sql.what, sql.where)
 
     # Convert full query to JSON for HTTP POST
-    query <- toJSON(list(query = full.query, parameters = list()))
+    json.query <- toJSON(list(query = full.query, parameters = list()))
 
-    # I guess the brackets in the query parameter break it; so we'll remove them
-    query <- str_replace(query, fixed("["), "")
-    query <- str_replace(query, fixed("]"), "")
+    # First set of brackets break the operation; remove them
+    json.query <- str_replace(json.query, fixed("["), "")
+    json.query <- str_replace(json.query, fixed("]"), "")
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
@@ -135,21 +132,21 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", debug.auth = FALSE, debu
 
     # Debug flag for viewing headers upon troubleshooting
     if (debug.query == TRUE) {
-
         print("*** Headers of Response ***")
         print(raw.response$headers)
         print(readBin(raw.response$content, "character"))
-
     }
 
-    # If the content response flag is FALSE, return full HTTP response
+    # Check content response flag; act accordingly
     if (content.response == FALSE) {
         raw.response
     } else if (content.response == TRUE) {
-        # If the content response flag is TRUE, return just the relevant content; no HTTP mess
         char.response <- readContent(raw.response)
         char.response$Documents
-    } else { print("Choose a content response; true or false!") }
+    } else {
+        print("Invalid content response option specified. Logical value required.")
+    }
+
 
 }
 
