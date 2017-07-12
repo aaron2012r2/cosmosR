@@ -6,7 +6,7 @@ Description: Accepts parameters for interacting with a Cosmos DB, then performs 
 Depends: R (>= 3.2.3)
 Imports:
 	httr,
-	digest
+	digest,
 	base64enc,
 	jsonlite,
 	stringr
