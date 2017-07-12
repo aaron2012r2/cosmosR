@@ -1,10 +1,16 @@
 Package: cosmosR
-Title: What the Package Does (one line, title case)
-Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-Depends: R (>= 3.4.0)
-License: What license is it under?
+Title: Query the Cosmos DB REST API
+Version: 0.0.1
+Authors@R: person("Aaron", "Schroeder", email = "aaron.schroeder.12+rprog@gmail.com", role = c("aut", "cre"))
+Description: Accepts parameters for interacting with a Cosmos DB, then performs simple queries against the REST API and returns then decodes their contents
+Depends: R (>= 3.2.3)
+Imports:
+	httr,
+	digest
+	base64enc,
+	jsonlite,
+	stringr
+License: CC-0 ; Creative Commons CC0 1.0 Universal
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1.9000
