@@ -11,7 +11,7 @@
 #' @examples
 #' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
 
-cosmosQuery <- function(sql.what = "*", sql.where = "", debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
+cosmosQuery <- function(sql.what = "*", sql.where = "", max.items = 100, debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -44,7 +44,7 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", debug.auth = FALSE, debu
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-documentdb-query-enablecrosspartition" = "true")), body = json.query)
+    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-documentdb-query-enablecrosspartition" = "true", "x-ms-max-item-count" = max.items)), body = json.query)
 
     # Send the status code of the POST to the console
     print(paste("Status Code is", raw.response$status_code, sep = " "))
