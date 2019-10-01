@@ -36,11 +36,7 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", max.items = 100, debug.a
     full.query <- constructQuery(sql.what, sql.where)
 
     # Convert full query to JSON for HTTP POST
-    json.query <- toJSON(list(query = full.query, parameters = list()))
-
-    # First set of brackets break the operation; remove them
-    json.query <- str_replace(json.query, fixed("["), "")
-    json.query <- str_replace(json.query, fixed("]"), "")
+    json.query <- toJSON(list(query = unbox(full.query), parameters = list()))
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
