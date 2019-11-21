@@ -7,13 +7,13 @@
 #' @examples
 #' readContent(http.response)
 
-readContent <- function(binary.stream) {
+readContent <- function(binary.stream, flatten = FALSE) {
 
     # Parse binary response into character
     char.response <- readBin(binary.stream$content, "character")
 
     # Convert the character response to json
-    json.response <- fromJSON(char.response)
+    json.response <- fromJSON(char.response, flatten = flatten)
 
     # Return the json
     json.response

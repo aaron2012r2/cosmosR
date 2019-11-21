@@ -12,7 +12,7 @@
 #' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
 
 cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max.items = 100, debug.auth = FALSE, debug.query = FALSE,
-                        content.response = FALSE) {
+                        content.response = FALSE, flatten = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -67,7 +67,7 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
         if (content.response == FALSE) {
             next_data_frame <- raw.response
         } else if (content.response == TRUE) {
-            char.response <- readContent(raw.response)
+            char.response <- readContent(raw.response, flatten = flatten)
             next_data_frame <- char.response$Documents
         }
 
@@ -78,6 +78,6 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
         # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
         if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
     }
-
+    
     return(rbind_pages(all_data_frames))
 }
