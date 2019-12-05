@@ -1,6 +1,6 @@
 #' POST a full query to the REST API for Cosmos DB.
 #' 
-#' @param sql.what String for specifying what fields to retrieve. Typically called select condition. Defaults to *
+#' @param sql.json String for specifying what fields to retrieve. Typically called select condition. Defaults to *
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
@@ -9,9 +9,9 @@
 #' @keywords query cosmosdb post
 #' @export
 #' @examples
-#' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
+#' cosmosCreate(sql.json = "{}", sql.where = "c.contact.eloquaId != null")
 
-cosmosQuery <- function(sql.json = "", max.items = 100, debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
+cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
