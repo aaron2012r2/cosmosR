@@ -41,7 +41,7 @@ cosmosCreate <- function(sql.body = "", sql.partitionkey_value = "", debug.auth 
     json.body <- sql.body
 
     # works!
-    sql.partitionkey_value <- "10036"
+    # sql.partitionkey_value <- "10036"
     partitionkey <- paste('["', sql.partitionkey_value, '"]', sep="")
 
     print('json.body:')
