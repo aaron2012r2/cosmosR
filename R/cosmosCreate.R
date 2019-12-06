@@ -40,6 +40,9 @@ cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debu
     # json.query <- toJSON(sql.json)
     json.query <- sql.json
 
+    print('json.query:')
+    print(json.query)
+
     # First set of brackets break the operation; remove them
     # json.query <- str_replace(json.query, fixed("["), "")
     # json.query <- str_replace(json.query, fixed("]"), "")
