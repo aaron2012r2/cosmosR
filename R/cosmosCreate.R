@@ -1,6 +1,6 @@
 #' POST a full query to the REST API for Cosmos DB.
 #' 
-#' @param sql.json String for specifying what fields to retrieve. Typically called select condition. Defaults to *
+#' @param sql.body List of key/values to 
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
@@ -11,7 +11,7 @@
 #' @examples
 #' cosmosCreate(sql.json = "{}", sql.where = "c.contact.eloquaId != null")
 
-cosmosCreate <- function(sql.body = "", sql.partitionkey_value = "", debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
+cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -32,30 +32,22 @@ cosmosCreate <- function(sql.body = "", sql.partitionkey_value = "", debug.auth 
     res.link <- paste("dbs/", envCosmosDB$dbName, "/colls/", envCosmosDB$collName, sep = "")
     res.type <- "docs"
 
-    # Create full query with function
-    # full.query <- constructQuery(sql.what, sql.where)
+    # JSON body as list
+    json.body <- sql.doc
 
-    # Convert full query to JSON for HTTP POST
-    # json.query <- toJSON(list(query = full.query, parameters = list()))
-    # json.query <- toJSON(sql.json)
-    json.body <- sql.body
-
-    # works!
-    # sql.partitionkey_value <- "10036"
+    # Set partition key (Note: must be the value, not the key!)
     partitionkey <- paste('["', sql.partitionkey_value, '"]', sep="")
 
-    print('json.body:')
-    print(json.body)
-    print('partitionkey:')
-    print(partitionkey)
-
-    # First set of brackets break the operation; remove them
-    # json.query <- str_replace(json.query, fixed("["), "")
-    # json.query <- str_replace(json.query, fixed("]"), "")
-
+    # Debug print
+    if (debug.query == TRUE) {
+        print(paste('sql.doc:', sql.doc, sep=" "))
+        print(paste('partitionkey:', partitionkey, sep=" ")
+    }
+    
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
     
+    # Geneerate POST request
     raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = partitionkey, "x-ms-documentdb-isupsert" = "true", "Accept" = "application/json" )), body = json.body, encode = "json", verbose())
 
     # Send the status code of the POST to the console
