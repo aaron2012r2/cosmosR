@@ -37,15 +37,17 @@ cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = FALSE, deb
 
     # Convert full query to JSON for HTTP POST
     # json.query <- toJSON(list(query = full.query, parameters = list()))
+    # json.query <- toJSON(sql.json)
     json.query <- sql.json
 
     # First set of brackets break the operation; remove them
-    json.query <- str_replace(json.query, fixed("["), "")
-    json.query <- str_replace(json.query, fixed("]"), "")
+    # json.query <- str_replace(json.query, fixed("["), "")
+    # json.query <- str_replace(json.query, fixed("]"), "")
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = json.query)
+    # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = json.query)
+    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = '{"id" : "ok"}')
 
     # Send the status code of the POST to the console
     print(paste("Status Code is", raw.response$status_code, sep = " "))
