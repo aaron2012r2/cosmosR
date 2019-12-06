@@ -1,15 +1,15 @@
-#' POST a full query to the REST API for Cosmos DB.
+#' POST a Document Create to the REST API for Cosmos DB.
 #' 
-#' @param sql.body List of key/values to 
-#' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
+#' @param sql.doc List of key/values to add to document. Required.
+#' @param sql.partitionkey_value The value of the partitionkey. Must also be part of sql.doc. Required. 
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
 #' @param content.response Logical value to determine whether to retrieve full response or just the documents
 #' @return Prints status code of HTTP POST, and returns full HTTP response or just the content
-#' @keywords query cosmosdb post
+#' @keywords create cosmosdb post
 #' @export
 #' @examples
-#' cosmosCreate(sql.json = "{}", sql.where = "c.contact.eloquaId != null")
+#' cosmosCreate(sql.doc = list(id="uuid", code="code1"), sql.partitionkey_value = "code1")
 
 cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
 
@@ -69,6 +69,5 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
     } else {
         print("Invalid content response option specified. Logical value required.")
     }
-
 
 }
