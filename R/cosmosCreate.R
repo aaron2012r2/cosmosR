@@ -67,9 +67,9 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
         raw.response
     } else if (content.response == TRUE) {
         char.response <- readContent(raw.response)
-         print('RESP->')
-         print(char.response)
-        char.response$Documents
+        #  print('RESP->')
+        #  print(char.response)
+        char.response
     } else {
         print("Invalid content response option specified. Logical value required.")
     }
