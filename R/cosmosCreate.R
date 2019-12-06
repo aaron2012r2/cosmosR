@@ -44,8 +44,10 @@ cosmosCreate <- function(sql.body = "", sql.partitionkey_value = "", debug.auth 
     sql.partitionkey_value <- "10036"
     partitionkey <- paste('["', sql.partitionkey_value, '"]', sep="")
 
-    print('json.query:')
-    print(json.query)
+    print('json.body:')
+    print(json.body)
+    print('partitionkey:')
+    print(partitionkey)
 
     # First set of brackets break the operation; remove them
     # json.query <- str_replace(json.query, fixed("["), "")
