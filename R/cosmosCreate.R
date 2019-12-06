@@ -11,7 +11,7 @@
 #' @examples
 #' cosmosCreate(sql.json = "{}", sql.where = "c.contact.eloquaId != null")
 
-cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
+cosmosCreate <- function(sql.body = "", sql.partitionkey_value = "", debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -38,7 +38,11 @@ cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debu
     # Convert full query to JSON for HTTP POST
     # json.query <- toJSON(list(query = full.query, parameters = list()))
     # json.query <- toJSON(sql.json)
-    json.query <- sql.json
+    json.body <- sql.body
+
+    # works!
+    sql.partitionkey_value <- "10036"
+    partitionkey <- paste('["', sql.partitionkey_value, '"]', sep="")
 
     print('json.query:')
     print(json.query)
@@ -49,10 +53,8 @@ cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debu
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
-    # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = json.query)
-    # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = '{"batch_id_ngi" : "ok_cosmosdb_test"}')
-    # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = "['/batch_id_ngi']" )), body = '{"batch_id_ngi" : "ok_cosmosdb_test"}')
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json" )), body = '{"debug_id" : "ok_cosmosdb_test"}')
+    
+    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = partitionkey, "x-ms-documentdb-isupsert" = "true", "Accept" = "application/json" )), body = json.body, encode = "json", verbose())
 
     # Send the status code of the POST to the console
     print(paste("Status Code is", raw.response$status_code, sep = " "))
