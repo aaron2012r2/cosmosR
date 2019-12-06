@@ -58,6 +58,7 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
     if (debug.query == TRUE) {
         print("*** Headers of Response ***")
         print(raw.response$headers)
+        print('CONTENT----->')
         print(readBin(raw.response$content, "character"))
     }
 
@@ -66,6 +67,8 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
         raw.response
     } else if (content.response == TRUE) {
         char.response <- readContent(raw.response)
+         print('RESP->')
+         print(char.response)
         char.response$Documents
     } else {
         print("Invalid content response option specified. Logical value required.")
