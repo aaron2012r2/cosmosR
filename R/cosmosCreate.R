@@ -11,7 +11,7 @@
 #' @examples
 #' cosmosCreate(sql.json = "{}", sql.where = "c.contact.eloquaId != null")
 
-cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
+cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
