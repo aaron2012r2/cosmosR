@@ -54,11 +54,12 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
     if (debug.query == TRUE) {
         print(paste("Status Code is", raw.response$status_code, sep = " "))
     }
+    
     # Debug flag for viewing headers upon troubleshooting
     if (debug.query == TRUE) {
         print("*** Headers of Response ***")
         print(raw.response$headers)
-        print('CONTENT----->')
+        print('*** Response Content ***')
         print(readBin(raw.response$content, "character"))
     }
 
