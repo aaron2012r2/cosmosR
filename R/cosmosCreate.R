@@ -51,7 +51,7 @@ cosmosCreate <- function(sql.json = "", max.items = 100, debug.auth = TRUE, debu
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
     # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = json.query)
     # raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-isupsert" = "true")), body = '{"batch_id_ngi" : "ok_cosmosdb_test"}')
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = "['batch_id_ngi']" )), body = '{"batch_id_ngi" : "ok_cosmosdb_test"}')
+    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = "['/batch_id_ngi']" )), body = '{"batch_id_ngi" : "ok_cosmosdb_test"}')
 
     # Send the status code of the POST to the console
     print(paste("Status Code is", raw.response$status_code, sep = " "))
