@@ -41,7 +41,7 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
     # Debug print
     if (debug.query == TRUE) {
         print(paste('sql.doc:', sql.doc, sep=" "))
-        print(paste('partitionkey:', partitionkey, sep=" ")
+        print(paste('partitionkey:', partitionkey, sep=" "))
     }
     
     # Generate auth header using specifications
