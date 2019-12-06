@@ -11,7 +11,7 @@
 #' @examples
 #' cosmosCreate(sql.doc = list(id="uuid", code="code1"), sql.partitionkey_value = "code1")
 
-cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth = TRUE, debug.query = TRUE, content.response = FALSE) {
+cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -51,8 +51,9 @@ cosmosCreate <- function(sql.doc = "", sql.partitionkey_value = "", debug.auth =
     raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/json", "x-ms-documentdb-partitionkey" = partitionkey, "x-ms-documentdb-isupsert" = "true", "Accept" = "application/json" )), body = json.body, encode = "json", verbose())
 
     # Send the status code of the POST to the console
-    print(paste("Status Code is", raw.response$status_code, sep = " "))
-
+    if (debug.query == TRUE) {
+        print(paste("Status Code is", raw.response$status_code, sep = " "))
+    }
     # Debug flag for viewing headers upon troubleshooting
     if (debug.query == TRUE) {
         print("*** Headers of Response ***")
