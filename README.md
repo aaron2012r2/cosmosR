@@ -17,5 +17,17 @@ This provides a list named list.all.documents which contains the full contents o
 ### Query Target
 As of 10-Jul-2017 the cosmosQuery function accepts basic parameters to target any db and collection in a Cosmos DB to which you have access. No guarantees are made, however, since this feature is new.
 
+### Create Document
+You can also create a document, by using the `cosmosCreate()` function. 
+(Note that the partition key _value_ is required by CosmosDB both as `value` in argument and as `key=value` in the document.)
+```
+cosmosAuth("KeyGoesHere", "uri", "dbName", "collName")
+sql_doc <- list(
+    id = "unique-id",
+    code = "code-1"
+)
+data <- cosmosCreate(sql.doc = sql_doc, sql.partitionkey_value = "code-1", content.response = TRUE)
+
+```
 ### Custom parameters
 Queries can be constructed and will always SELECT from "c," the full Cosmos DB, at this time. These are built using the constructQuery function.
