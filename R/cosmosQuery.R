@@ -11,7 +11,8 @@
 #' @examples
 #' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
 
-cosmosQuery <- function(sql.what = "*", sql.where = "", max.items = 100, debug.auth = FALSE, debug.query = FALSE, content.response = FALSE) {
+cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max.items = 100, debug.auth = FALSE, debug.query = FALSE,
+                        content.response = FALSE, flatten = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -36,35 +37,47 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", max.items = 100, debug.a
     full.query <- constructQuery(sql.what, sql.where)
 
     # Convert full query to JSON for HTTP POST
-    json.query <- toJSON(list(query = full.query, parameters = list()))
-
-    # First set of brackets break the operation; remove them
-    json.query <- str_replace(json.query, fixed("["), "")
-    json.query <- str_replace(json.query, fixed("]"), "")
+    json.query <- toJSON(list(query = full.query, parameters = sql.params), auto_unbox = T)
 
     # Generate auth header using specifications
     auth.header <- genHeader(verb = "POST", resource.type = res.type, resource.link = res.link, stored.time = ms.date.string, debug = debug.auth)
-    raw.response <- POST(post.uri, add_headers(.headers = c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-documentdb-query-enablecrosspartition" = "true", "x-ms-max-item-count" = max.items)), body = json.query)
+    all.headers <- c("Authorization" = auth.header, "x-ms-version" = "2017-02-22", "x-ms-date" = ms.date.string, "Content-Type" = "application/query+json", "x-ms-documentdb-isquery" = "true", "x-ms-documentdb-query-enablecrosspartition" = "true", "x-ms-max-item-count" = max.items)
+    raw.response <- NULL
 
-    # Send the status code of the POST to the console
-    print(paste("Status Code is", raw.response$status_code, sep = " "))
+    # Store all returned data frames here
+    all_data_frames <- list()
 
-    # Debug flag for viewing headers upon troubleshooting
-    if (debug.query == TRUE) {
-        print("*** Headers of Response ***")
-        print(raw.response$headers)
-        print(readBin(raw.response$content, "character"))
+    repeat {
+        if (!is.null(raw.response)) {
+            all.headers[["x-ms-continuation"]] <- raw.response$headers[["x-ms-continuation"]]
+        }
+        raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+
+        # Send the status code of the POST to the console
+        print(paste("Status Code is", raw.response$status_code, sep = " "))
+
+        # Debug flag for viewing headers upon troubleshooting
+        if (debug.query == TRUE) {
+            print("*** Headers of Response ***")
+            print(raw.response$headers)
+            print(readBin(raw.response$content, "character"))
+        }
+
+        # Check content response flag; act accordingly
+        if (content.response == FALSE) {
+            next_data_frame <- raw.response
+        } else if (content.response == TRUE) {
+            char.response <- readContent(raw.response, flatten = flatten)
+            next_data_frame <- char.response$Documents
+        }
+
+        # Add the next data frame to the list
+        all_data_frames = c(all_data_frames, list(next_data_frame))
+
+        # If the x-ms-continuation header is present, there are more pages to fetch.
+        # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
+        if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
     }
-
-    # Check content response flag; act accordingly
-    if (content.response == FALSE) {
-        raw.response
-    } else if (content.response == TRUE) {
-        char.response <- readContent(raw.response)
-        char.response$Documents
-    } else {
-        print("Invalid content response option specified. Logical value required.")
-    }
-
-
+    
+    return(rbind_pages(all_data_frames))
 }
