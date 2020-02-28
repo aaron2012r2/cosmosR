@@ -4,7 +4,7 @@
 \alias{readContent}
 \title{Decode the raw contents of an HTTP response and convert it to a list}
 \usage{
-readContent(binary.stream)
+readContent(binary.stream, flatten = FALSE)
 }
 \arguments{
 \item{binary.stream}{The content field of an HTTP response to be decoded as a character}

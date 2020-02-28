@@ -1,18 +1,28 @@
 #' POST a full query to the REST API for Cosmos DB.
-#' 
+#'
 #' @param sql.what String for specifying what fields to retrieve. Typically called select condition. Defaults to *
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
 #' @param content.response Logical value to determine whether to retrieve full response or just the documents
+#' @param max.retry Numeric value corresponding to number of retries on 429 error
+#' @param retry.pause Numeric value number of seconds to pause between 429 error retrys
 #' @return Prints status code of HTTP POST, and returns full HTTP response or just the content
 #' @keywords query cosmosdb post
 #' @export
 #' @examples
 #' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
 
-cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max.items = 100, debug.auth = FALSE, debug.query = FALSE,
-                        content.response = FALSE, flatten = FALSE) {
+cosmosQuery <- function(sql.what = "*",
+                        sql.where = "",
+                        sql.params = list(),
+                        max.items = 100,
+                        debug.auth = FALSE,
+                        debug.query = FALSE,
+                        content.response = FALSE,
+                        flatten = FALSE,
+                        max.retry = 5,
+                        retry.pause = 0) {
 
     require(digest)
     require(base64enc)
@@ -51,10 +61,17 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
         if (!is.null(raw.response)) {
             all.headers[["x-ms-continuation"]] <- raw.response$headers[["x-ms-continuation"]]
         }
-        raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
 
-        # Send the status code of the POST to the console
-        print(paste("Status Code is", raw.response$status_code, sep = " "))
+      retry = 0
+      raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+
+      while(raw.response$status_code == 429 & retry <= max.retry){
+        retry = retry + 1
+        print(paste0("429 Error, Retry ",retry,"/",max.retry))
+        pause(retry.pause)
+        raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+      }
+
 
         # Debug flag for viewing headers upon troubleshooting
         if (debug.query == TRUE) {
@@ -78,6 +95,6 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
         # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
         if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
     }
-    
+
     return(rbind_pages(all_data_frames))
 }

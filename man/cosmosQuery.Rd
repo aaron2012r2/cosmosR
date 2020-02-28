@@ -4,8 +4,10 @@
 \alias{cosmosQuery}
 \title{POST a full query to the REST API for Cosmos DB.}
 \usage{
-cosmosQuery(sql.what = "*", sql.where = "", debug.auth = FALSE,
-  debug.query = FALSE, content.response = FALSE)
+cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
+  max.items = 100, debug.auth = FALSE, debug.query = FALSE,
+  content.response = FALSE, flatten = FALSE, max.retry = 5,
+  retry.pause = 0)
 }
 \arguments{
 \item{sql.what}{String for specifying what fields to retrieve. Typically called select condition. Defaults to *}
@@ -17,6 +19,10 @@ cosmosQuery(sql.what = "*", sql.where = "", debug.auth = FALSE,
 \item{debug.query}{Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.}
 
 \item{content.response}{Logical value to determine whether to retrieve full response or just the documents}
+
+\item{max.retry}{Numeric value corresponding to number of retries on 429 error}
+
+\item{retry.pause}{Numeric value number of seconds to pause between 429 error retrys}
 }
 \value{
 Prints status code of HTTP POST, and returns full HTTP response or just the content
