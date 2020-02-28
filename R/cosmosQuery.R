@@ -5,8 +5,7 @@
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
 #' @param content.response Logical value to determine whether to retrieve full response or just the documents
-#' @param max.retry Numeric value corresponding to number of retries on 429 error
-#' @param retry.pause Numeric value number of seconds to pause between 429 error retrys
+#' @param max.retry Numeric number of retries on a 429 error
 #' @return Prints status code of HTTP POST, and returns full HTTP response or just the content
 #' @keywords query cosmosdb post
 #' @export
@@ -20,9 +19,8 @@ cosmosQuery <- function(sql.what = "*",
                         debug.auth = FALSE,
                         debug.query = FALSE,
                         content.response = FALSE,
-                        flatten = FALSE,
                         max.retry = 5,
-                        retry.pause = 0) {
+                        flatten = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -62,14 +60,15 @@ cosmosQuery <- function(sql.what = "*",
             all.headers[["x-ms-continuation"]] <- raw.response$headers[["x-ms-continuation"]]
         }
 
-      retry = 0
       raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+      retry = 0
 
       while(raw.response$status_code == 429 & retry <= max.retry){
         retry = retry + 1
-        print(paste0("429 Error, Retry ",retry,"/",max.retry))
-        pause(retry.pause)
+        print(paste0("429 Error, Retry ",retry,"/",max.retry," Waiting ",raw.response$headers[["x-ms-retry-after-ms"]]/1000," Seconds"))
+        pause(raw.response$headers[["x-ms-retry-after-ms"]]/1000)
         raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+        print(raw.response$status_code)
       }
 
 
@@ -77,7 +76,6 @@ cosmosQuery <- function(sql.what = "*",
         if (debug.query == TRUE) {
             print("*** Headers of Response ***")
             print(raw.response$headers)
-            print(readBin(raw.response$content, "character"))
         }
 
         # Check content response flag; act accordingly

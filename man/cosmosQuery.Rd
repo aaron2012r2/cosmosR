@@ -6,8 +6,7 @@
 \usage{
 cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
   max.items = 100, debug.auth = FALSE, debug.query = FALSE,
-  content.response = FALSE, flatten = FALSE, max.retry = 5,
-  retry.pause = 0)
+  content.response = FALSE, max.retry = 5, flatten = FALSE)
 }
 \arguments{
 \item{sql.what}{String for specifying what fields to retrieve. Typically called select condition. Defaults to *}
@@ -20,9 +19,7 @@ cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
 
 \item{content.response}{Logical value to determine whether to retrieve full response or just the documents}
 
-\item{max.retry}{Numeric value corresponding to number of retries on 429 error}
-
-\item{retry.pause}{Numeric value number of seconds to pause between 429 error retrys}
+\item{max.retry}{Numeric number of retries on a 429 error}
 }
 \value{
 Prints status code of HTTP POST, and returns full HTTP response or just the content
