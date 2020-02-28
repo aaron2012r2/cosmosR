@@ -61,16 +61,23 @@ cosmosQuery <- function(sql.what = "*",
         }
 
       raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
-      retry = 0
 
-      while(raw.response$status_code == 429 & retry <= max.retry){
-        retry = retry + 1
-        print(paste0("429 Error, Retry ",retry,"/",max.retry," Waiting ",raw.response$headers[["x-ms-retry-after-ms"]]/1000," Seconds"))
-        pause(raw.response$headers[["x-ms-retry-after-ms"]]/1000)
-        raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
-        print(raw.response$status_code)
+      ## 429 Error Handling
+      if(raw.response$status_code == 429){
+        retry = 0
+        repeat{
+          retry = retry + 1
+          Wait_Time = as.numeric(raw.response$headers[["x-ms-retry-after-ms"]])/1000
+          print(paste0("429 Error, Retry ",retry,"/",max.retry," Waiting ",Wait_Time," Seconds"))
+          Sys.sleep(Wait_Time)
+          raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+          if(raw.response$status_code == 200){break}
+          if(retry == max.retry){
+            print((paste0("Query unsuccessful after ",max.retry," tries")))
+            break
+          }
+        }
       }
-
 
         # Debug flag for viewing headers upon troubleshooting
         if (debug.query == TRUE) {
