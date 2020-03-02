@@ -101,5 +101,5 @@ cosmosQuery <- function(sql.what = "*",
         if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
     }
 
-    return(rbind_pages(all_data_frames))
+    return(rbind_pages(all_data_frames[sapply(all_data_frames, length)>0]))
 }

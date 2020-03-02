@@ -1,5 +1,5 @@
 #' Set up initial parameters for Cosmos DB querying
-#' 
+#'
 #' @param sql.what String for specifying what fields to retrieve. Typically called select condition
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition
 #' @return String containing a full SELECT statement for the database
