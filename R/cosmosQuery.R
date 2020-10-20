@@ -3,6 +3,7 @@
 #' @param sql.what String for specifying what fields to retrieve. Typically called select condition. Defaults to *
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
+#' @param debug.header Logical value for getting verbose output of response headers. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
 #' @param content.response Logical value to determine whether to retrieve full response or just the documents
 #' @param max.retry Numeric number of retries on a 429 error
@@ -17,6 +18,7 @@ cosmosQuery <- function(sql.what = "*",
                         sql.params = list(),
                         max.items = 100,
                         debug.auth = FALSE,
+                        debug.header = FALSE,
                         debug.query = FALSE,
                         content.response = FALSE,
                         max.retry = 5,
@@ -80,10 +82,14 @@ cosmosQuery <- function(sql.what = "*",
       }
 
         # Debug flag for viewing headers upon troubleshooting
-        if (debug.query == TRUE) {
-            print("*** Headers of Response ***")
-            print(raw.response$headers)
-        }
+      if (debug.query) {
+        print("*** Query Content ***")
+        print(json.query)
+      }
+      if(debug.header){
+        print("*** Headers of Response ***")
+        print(raw.response$headers)
+      }
 
         # Check content response flag; act accordingly
         if (content.response == FALSE) {

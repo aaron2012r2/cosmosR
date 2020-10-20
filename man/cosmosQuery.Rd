@@ -5,8 +5,9 @@
 \title{POST a full query to the REST API for Cosmos DB.}
 \usage{
 cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
-  max.items = 100, debug.auth = FALSE, debug.query = FALSE,
-  content.response = FALSE, max.retry = 5, flatten = FALSE)
+  max.items = 100, debug.auth = FALSE, debug.header = FALSE,
+  debug.query = FALSE, content.response = FALSE, max.retry = 5,
+  flatten = FALSE)
 }
 \arguments{
 \item{sql.what}{String for specifying what fields to retrieve. Typically called select condition. Defaults to *}
@@ -14,6 +15,8 @@ cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
 \item{sql.where}{String for specifying what filter to use on data. Typically called search condition. Defaults to empty.}
 
 \item{debug.auth}{Logical value for getting verbose output of auth header being constructed. Defaults to false.}
+
+\item{debug.header}{Logical value for getting verbose output of response headers. Defaults to false.}
 
 \item{debug.query}{Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.}
 

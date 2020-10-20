@@ -1,5 +1,5 @@
 #' Set up initial parameters for Cosmos DB querying
-#' 
+#'
 #' @param key Access key, primary or secondary, for interacting with Cosmos DB collection
 #' @param uri HTTPS URI to the Cosmos DB
 #' @param dbName String name of CosmosDB Database target
