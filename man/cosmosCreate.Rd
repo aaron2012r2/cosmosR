@@ -4,8 +4,13 @@
 \alias{cosmosCreate}
 \title{POST a Document Create to the REST API for Cosmos DB.}
 \usage{
-cosmosCreate(sql.doc = "", sql.partitionkey_value = "",
-  debug.auth = FALSE, debug.query = FALSE, content.response = FALSE)
+cosmosCreate(
+  sql.doc = "",
+  sql.partitionkey_value = "",
+  debug.auth = FALSE,
+  debug.query = FALSE,
+  content.response = FALSE
+)
 }
 \arguments{
 \item{sql.doc}{List of key/values to add to document. Required.}

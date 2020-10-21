@@ -17,6 +17,7 @@ cosmosQuery <- function(sql.what = "*",
                         sql.where = "",
                         sql.params = list(),
                         max.items = 100,
+                        max.pages = 10,
                         debug.auth = FALSE,
                         debug.header = FALSE,
                         debug.query = FALSE,
@@ -56,6 +57,7 @@ cosmosQuery <- function(sql.what = "*",
 
     # Store all returned data frames here
     all_data_frames <- list()
+    page_counter = 0
 
     repeat {
         if (!is.null(raw.response)) {
@@ -104,7 +106,8 @@ cosmosQuery <- function(sql.what = "*",
 
         # If the x-ms-continuation header is present, there are more pages to fetch.
         # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
-        if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
+        page_counter = page_counter + 1
+        if (is.null(raw.response$headers[["x-ms-continuation"]]) | page_counter == max.pages) { break }
     }
 
     return(rbind_pages(all_data_frames[sapply(all_data_frames, length)>0]))

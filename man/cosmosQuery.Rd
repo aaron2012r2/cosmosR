@@ -4,10 +4,19 @@
 \alias{cosmosQuery}
 \title{POST a full query to the REST API for Cosmos DB.}
 \usage{
-cosmosQuery(sql.what = "*", sql.where = "", sql.params = list(),
-  max.items = 100, debug.auth = FALSE, debug.header = FALSE,
-  debug.query = FALSE, content.response = FALSE, max.retry = 5,
-  flatten = FALSE)
+cosmosQuery(
+  sql.what = "*",
+  sql.where = "",
+  sql.params = list(),
+  max.items = 100,
+  max.pages = 10,
+  debug.auth = FALSE,
+  debug.header = FALSE,
+  debug.query = FALSE,
+  content.response = FALSE,
+  max.retry = 5,
+  flatten = FALSE
+)
 }
 \arguments{
 \item{sql.what}{String for specifying what fields to retrieve. Typically called select condition. Defaults to *}
