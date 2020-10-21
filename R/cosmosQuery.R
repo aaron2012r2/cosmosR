@@ -108,7 +108,12 @@ cosmosQuery <- function(sql.what = "*",
         # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
         page_counter = page_counter + 1
         p$tick()$print()
-        if (is.null(raw.response$headers[["x-ms-continuation"]]) | page_counter == max.pages) { break }
+        if (is.null(raw.response$headers[["x-ms-continuation"]]) | page_counter == max.pages) {
+          if(!is.null(raw.response$headers[["x-ms-continuation"]])){
+            print(stringr::str_c("Canceling Early Due To max.pages parameter, if all data is required consider increasing this parameter"))
+          }
+          break
+        }
     }
 
     return(rbind_pages(all_data_frames[sapply(all_data_frames, length)>0]))
