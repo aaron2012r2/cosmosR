@@ -2,7 +2,7 @@
 
 export(constructQuery)
 export(cosmosAuth)
+export(cosmosCreate)
 export(cosmosQuery)
 export(genHeader)
 export(readContent)
-export(cosmosCreate)

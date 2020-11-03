@@ -1,18 +1,29 @@
 #' POST a full query to the REST API for Cosmos DB.
-#' 
+#'
 #' @param sql.what String for specifying what fields to retrieve. Typically called select condition. Defaults to *
 #' @param sql.where String for specifying what filter to use on data. Typically called search condition. Defaults to empty.
 #' @param debug.auth Logical value for getting verbose output of auth header being constructed. Defaults to false.
+#' @param debug.header Logical value for getting verbose output of response headers. Defaults to false.
 #' @param debug.query Logical value for getting verbose output of HTTP response, printing all headers. Defaults to false.
 #' @param content.response Logical value to determine whether to retrieve full response or just the documents
+#' @param max.retry Numeric number of retries on a 429 error
 #' @return Prints status code of HTTP POST, and returns full HTTP response or just the content
 #' @keywords query cosmosdb post
 #' @export
 #' @examples
 #' cosmosQuery(sql.what = "c.contact.eloquaId", sql.where = "c.contact.eloquaId != null")
 
-cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max.items = 100, debug.auth = FALSE, debug.query = FALSE,
-                        content.response = FALSE, flatten = FALSE) {
+cosmosQuery <- function(sql.what = "*",
+                        sql.where = "",
+                        sql.params = list(),
+                        max.items = 100,
+                        max.pages = 10,
+                        debug.auth = FALSE,
+                        debug.header = FALSE,
+                        debug.query = FALSE,
+                        content.response = FALSE,
+                        max.retry = 5,
+                        flatten = FALSE) {
 
     require(digest)
     require(base64enc)
@@ -46,22 +57,41 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
 
     # Store all returned data frames here
     all_data_frames <- list()
-
+    page_counter = 0
+    p = dplyr::progress_estimated(max.pages)
     repeat {
         if (!is.null(raw.response)) {
             all.headers[["x-ms-continuation"]] <- raw.response$headers[["x-ms-continuation"]]
         }
-        raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
 
-        # Send the status code of the POST to the console
-        print(paste("Status Code is", raw.response$status_code, sep = " "))
+      raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+
+      ## 429 Error Handling
+      if(raw.response$status_code == 429){
+        retry = 0
+        repeat{
+          retry = retry + 1
+          Wait_Time = as.numeric(raw.response$headers[["x-ms-retry-after-ms"]])/1000
+          print(paste0("429 Error, Retry ",retry,"/",max.retry," Waiting ",Wait_Time," Seconds"))
+          Sys.sleep(Wait_Time)
+          raw.response <- POST(post.uri, add_headers(.headers = all.headers), body = json.query)
+          if(raw.response$status_code == 200){break}
+          if(retry == max.retry){
+            print((paste0("Query unsuccessful after ",max.retry," tries")))
+            break
+          }
+        }
+      }
 
         # Debug flag for viewing headers upon troubleshooting
-        if (debug.query == TRUE) {
-            print("*** Headers of Response ***")
-            print(raw.response$headers)
-            print(readBin(raw.response$content, "character"))
-        }
+      if (debug.query) {
+        print("*** Query Content ***")
+        print(json.query)
+      }
+      if(debug.header){
+        print("*** Headers of Response ***")
+        print(raw.response$headers)
+      }
 
         # Check content response flag; act accordingly
         if (content.response == FALSE) {
@@ -76,8 +106,15 @@ cosmosQuery <- function(sql.what = "*", sql.where = "", sql.params = list(), max
 
         # If the x-ms-continuation header is present, there are more pages to fetch.
         # See https://docs.microsoft.com/en-us/rest/api/cosmos-db/querying-cosmosdb-resources-using-the-rest-api#pagination-of-query-results
-        if (is.null(raw.response$headers[["x-ms-continuation"]])) { break }
+        page_counter = page_counter + 1
+        p$tick()$print()
+        if (is.null(raw.response$headers[["x-ms-continuation"]]) | page_counter == max.pages) {
+          if(!is.null(raw.response$headers[["x-ms-continuation"]])){
+            print(stringr::str_c("Canceling Early Due To max.pages parameter, if all data is required consider increasing this parameter"))
+          }
+          break
+        }
     }
-    
-    return(rbind_pages(all_data_frames))
+
+    return(rbind_pages(all_data_frames[sapply(all_data_frames, length)>0]))
 }

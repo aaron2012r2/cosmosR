@@ -4,8 +4,14 @@
 \alias{genHeader}
 \title{Generate authentication string for REST API interaction}
 \usage{
-genHeader(verb, resource.type = "docs", resource.link, stored.time,
-  master.key = envCosmosDB, debug = FALSE)
+genHeader(
+  verb,
+  resource.type = "docs",
+  resource.link,
+  stored.time,
+  master.key = envCosmosDB,
+  debug = FALSE
+)
 }
 \arguments{
 \item{verb}{Type of operation to be done in the request}
